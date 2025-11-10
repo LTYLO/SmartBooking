@@ -2,26 +2,28 @@ from pathlib import Path
 import os
 import environ
 
-# ==============================
-# CONFIGURACIÓN BASE
-# ==============================
-
+# Inicializa variables de entorno
 env = environ.Env()
-environ.Env.read_env()  # Carga las variables del archivo .env
+environ.Env.read_env()
 
+# BASE_DIR apunta a Backend/core (donde está settings.py)
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# ==============================
-# SEGURIDAD
-# ==============================
+# Ruta hacia el build del frontend
+# Si tu estructura es: SmartBooking/Backend/core/ y SmartBooking/Frontend/
+FRONTEND_BUILD_DIR = BASE_DIR.parent / "Frontend" / "build"
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
-DEBUG = os.environ.get('DEBUG', 'True').lower() == 'true'
-ALLOWED_HOSTS = env.list('ALLOWED_HOST_DEV', default=[])
+# =============================
+# Configuración general
+# =============================
 
-# ==============================
-# APLICACIONES
-# ==============================
+SECRET_KEY = os.environ.get('SECRET_KEY', 'unsafe-secret-key')
+DEBUG = os.environ.get('DEBUG', 'True') == 'True'
+ALLOWED_HOSTS = ["*"]
+
+# =============================
+# Aplicaciones instaladas
+# =============================
 
 DJANGO_APPS = [
     'django.contrib.admin',
@@ -33,36 +35,46 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
+    # tus apps aquí
 ]
 
 THIRD_PARTY_APPS = [
     'corsheaders',
     'rest_framework',
-    'django_ckeditor_5'
+    'ckeditor',
+    'ckeditor_uploader',
 ]
 
 INSTALLED_APPS = DJANGO_APPS + PROJECT_APPS + THIRD_PARTY_APPS
 
-# ==============================
-# CKEDITOR CONFIG
-# ==============================
+# =============================
+# Configuración CKEditor
+# =============================
 
-CKEDITOR_5_CONFIGS = {
+CKEDITOR_CONFIGS = {
     'default': {
-        'toolbar': ['heading', '|', 'bold', 'italic', 'link',
-                    'bulletedList', 'numberedList', 'blockQuote'],
+        'toolbar': 'Custom',
+        'toolbar_Custom': [
+            ['Bold', 'Italic', 'Underline'],
+            ['NumberedList', 'BulletedList', '-', 'Outdent', 'Indent', '-', 
+             'JustifyLeft', 'JustifyCenter', 'JustifyRight', 'JustifyBlock'],
+            ['Link', 'Unlink'],
+            ['RemoveFormat', 'Source']
+        ],
+        'autoParagraph': False
     },
 }
+CKEDITOR_UPLOAD_PATH = "uploads/"
+CKEDITOR_BASEPATH = "/static/ckeditor/ckeditor/"
 
-CKEDITOR_UPLOAD_PATH = 'media/'
-
-# ==============================
-# MIDDLEWARE
-# ==============================
+# =============================
+# Middleware
+# =============================
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    "corsheaders.middleware.CorsMiddleware",
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Movido aquí (después de SecurityMiddleware)
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -71,20 +83,19 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-# ==============================
-# URLS Y WSGI
-# ==============================
+ROOT_URLCONF = 'core.urls'  # Corregido a 'core' en lugar de 'Ecomarket'
 
-ROOT_URLCONF = 'core.urls'
+# =============================
+# Templates
+# =============================
 
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],  # Puedes añadir rutas a templates personalizados si los tienes
+        'DIRS': [FRONTEND_BUILD_DIR] if FRONTEND_BUILD_DIR.exists() else [],  # Solo si existe
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
-                'django.template.context_processors.debug',
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
@@ -93,22 +104,20 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'
+WSGI_APPLICATION = 'core.wsgi.application'  # Corregido a 'core'
 
-# ==============================
-# BASE DE DATOS
-# ==============================
+# =============================
+# Base de datos
+# =============================
 
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
-    }
+    "default": env.db("DATABASE_URL", default=f"sqlite:///{BASE_DIR / 'db.sqlite3'}")
 }
+DATABASES["default"]["ATOMIC_REQUESTS"] = True
 
-# ==============================
-# VALIDACIÓN DE CONTRASEÑAS
-# ==============================
+# =============================
+# Validaciones de contraseña
+# =============================
 
 AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator'},
@@ -117,33 +126,37 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
-# ==============================
-# LOCALIZACIÓN
-# ==============================
+# =============================
+# Internacionalización
+# =============================
 
-LANGUAGE_CODE = 'es-co'
-TIME_ZONE = 'America/Bogota'
+LANGUAGE_CODE = 'en-us'
+TIME_ZONE = 'UTC'
 USE_I18N = True
 USE_TZ = True
 
-# ==============================
-# ARCHIVOS ESTÁTICOS Y MEDIA
-# ==============================
+# =============================
+# Archivos estáticos / media
+# =============================
 
 STATIC_URL = '/static/'
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+
+# Solo agregar STATICFILES_DIRS si la carpeta existe
+STATICFILES_DIRS = []
+if (FRONTEND_BUILD_DIR / "static").exists():
+    STATICFILES_DIRS.append(FRONTEND_BUILD_DIR / "static")
+
+STATIC_ROOT = BASE_DIR / "staticfiles"  # Para collectstatic
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+MEDIA_ROOT = BASE_DIR / "media"
 
-# Si tienes un proyecto React compilado con npm run build
-STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'build', 'static'),
-]
+# WhiteNoise (sirve estáticos en producción)
+STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
 
-# ==============================
-# CONFIGURACIÓN DE REST FRAMEWORK
-# ==============================
+# =============================
+# Configuración REST y CORS
+# =============================
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
@@ -151,32 +164,19 @@ REST_FRAMEWORK = {
     ]
 }
 
-# ==============================
-# CORS Y CSRF
-# ==============================
+CORS_ORIGIN_WHITELIST = env.list('CORS_ORIGIN_WHITELIST_DEV', default=[])
+CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS_DEV', default=[])
 
-CORS_ORIGIN_WHITELIST = env.list('CORS_ORIGIN_WHITELIST_DEV', default=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-])
+# =============================
+# Email
+# =============================
 
-CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS_DEV', default=[
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-])
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
-# ==============================
-# CONFIGURACIÓN PARA PRODUCCIÓN
-# ==============================
-
-if not DEBUG:
-    ALLOWED_HOSTS = env.list('ALLOWED_HOSTS_DEPLOY', default=[])
-    CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS_DEPLOY', default=[])
-    DATABASES = {"default": env.db("DATABASE_URL")}
-    DATABASES["default"]["ATOMIC_REQUESTS"] = True
-
-# ==============================
-# CONFIGURACIÓN FINAL
-# ==============================
+# =============================
+# Clave primaria por defecto
+# =============================
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
