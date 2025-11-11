@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { connect } from 'react-redux';
+import { Typewriter } from 'react-simple-typewriter';
 
 function Navbar(props) {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -19,8 +20,7 @@ function Navbar(props) {
 
   return (
     <nav 
-      className={`relative z-30 transition-all duration-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-8'}`}
-      style={{transform: `translateY(${scrollY * 0.1}px)`}}
+    
     >
       <div className="px-4 sm:px-6 md:px-8 py-4 md:py-6">
         {/* Desktop & Tablet Layout */}
@@ -30,7 +30,17 @@ function Navbar(props) {
             <div className="w-12 h-12 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg hover:scale-110 hover:rotate-6 transition-all duration-500 cursor-pointer">
               S
             </div>
-            <span className="text-3xl font-black text-[#3d3d3d] tracking-tight">SMARTBOOKING</span>
+            <span className="text-3xl font-black text-[#3d3d3d] tracking-tight">
+              <Typewriter
+                words={['SMARTBOOKING']}
+                loop={0}
+                cursor
+                cursorStyle="_"
+                typeSpeed={70}
+                deleteSpeed={350}
+                delaySpeed={1000}
+              />
+            </span>
           </div>
           
           {/* Menu */}
@@ -60,7 +70,17 @@ function Navbar(props) {
               <div className="w-10 h-10 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-xl font-black shadow-lg">
                 S
               </div>
-              <span className="text-xl sm:text-2xl font-black text-[#3d3d3d] tracking-tight">SMARTBOOKING</span>
+              <span className="text-xl sm:text-2xl font-black text-[#3d3d3d] tracking-tight">
+                <Typewriter
+                  words={['SMARTBOOKING']}
+                  loop={0}
+                  cursor
+                  cursorStyle="_"
+                  typeSpeed={70}
+                  deleteSpeed={350}
+                  delaySpeed={1000}
+                />
+              </span>
             </div>
 
             {/* Hamburger Menu */}

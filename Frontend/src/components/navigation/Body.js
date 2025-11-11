@@ -67,7 +67,7 @@ function Body(props) {
   const [endTime, setEndTime] = useState('17:00');
   const [spaceType, setSpaceType] = useState('sala');
   const [isLoaded, setIsLoaded] = useState(false);
-
+  
   useEffect(() => {
     setIsLoaded(true);
   }, []);
@@ -89,11 +89,11 @@ function Body(props) {
     <div className="min-h-screen">
       {/* Hero Content */}
       <div className={`relative z-20 text-center px-4 sm:px-6 md:px-8 py-8 sm:py-12 md:py-16 lg:py-20 transition-all duration-1000 delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'}`}>
-        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black text-[#c9b39c] tracking-wider leading-none mb-4 sm:mb-6 uppercase drop-shadow-2xl" 
+        {/* Título con Gradiente Animado */}
+        <h1 className="text-4xl sm:text-6xl md:text-7xl lg:text-8xl xl:text-9xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent tracking-wider leading-none mb-4 sm:mb-9 uppercase drop-shadow-2xl animate-pulse" 
             style={{
               fontFamily: 'system-ui, -apple-system, sans-serif', 
               letterSpacing: '0.05em',
-              textShadow: '4px 4px 8px rgba(0,0,0,0.3)'
             }}>
           SMARTBOOKING
         </h1>
