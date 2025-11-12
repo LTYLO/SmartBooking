@@ -8,9 +8,11 @@ import Resgistrarse from 'containers/pages/Sing_Up'
 import IniciarSesion from 'containers/pages/Log_in'
 import store from './store';
 import { Provider } from 'react-redux';
+import { AuthProvider } from 'components/AuthContext';
 
 function App() {
   return (
+    <AuthProvider>
     <Provider store={store}>
       <Router>
         <Routes>
@@ -27,6 +29,7 @@ function App() {
         </Routes>
       </Router>
     </Provider>
+    </AuthProvider>
   );
 }
 

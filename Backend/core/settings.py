@@ -35,7 +35,7 @@ DJANGO_APPS = [
 ]
 
 PROJECT_APPS = [
-    # tus apps aquí
+    'apps.users',
 ]
 
 THIRD_PARTY_APPS = [
@@ -104,7 +104,7 @@ TEMPLATES = [
     },
 ]
 
-WSGI_APPLICATION = 'core.wsgi.application'  # Corregido a 'core'
+WSGI_APPLICATION = 'core.wsgi.application'  
 
 # =============================
 # Base de datos
@@ -166,11 +166,16 @@ REST_FRAMEWORK = {
 
 CORS_ORIGIN_WHITELIST = env.list('CORS_ORIGIN_WHITELIST_DEV', default=[])
 CSRF_TRUSTED_ORIGINS = env.list('CSRF_TRUSTED_ORIGINS_DEV', default=[])
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+]
 # =============================
 # Email
 # =============================
-
+AUTHENTICATION_BACKENDS = [
+    'Ecomarket.authentication.EmailBackend', 
+    'django.contrib.auth.backends.ModelBackend',  
+]
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # =============================
@@ -180,3 +185,5 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 SILENCED_SYSTEM_CHECKS = ['ckeditor.W001']
+
+AUTH_USER_MODEL = 'users.Usuario'
