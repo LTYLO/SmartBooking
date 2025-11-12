@@ -7,3 +7,5 @@ instalar con estos comandos
 pip install -r requirements.txt
 npm install
 
+
+npm i --legacy-peer-deps
