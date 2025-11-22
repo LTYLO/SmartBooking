@@ -39,6 +39,8 @@ from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    username_field = 'email'  
+
     @classmethod
     def get_token(cls, user):
         token = super().get_token(user)
@@ -46,6 +48,5 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
         return token
 
     def validate(self, attrs):
-        # Reemplazar "username" por "email"
         attrs['username'] = attrs.get('email')
         return super().validate(attrs)

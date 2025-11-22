@@ -28,17 +28,20 @@ from django.contrib.auth.hashers import make_password
 
 @method_decorator(csrf_exempt, name='dispatch')
 class RegisterUser(APIView):
-    def get(self, request):
-        return Response({"message": "Usa POST para registrar usuario"}, status=status.HTTP_200_OK)
-
     def post(self, request):
         data = request.data
-        user = Usuario(
-            email=data.get('email'),
-            password=make_password(data.get('password')),
-        )
-        user.save()
-        return Response({"message": "Usuario creado"}, status=status.HTTP_201_CREATED)
+        try:
+            user = Usuario.objects.create_user(
+                email=data.get('email'),
+                password=data.get('password'),
+                nombre=data.get('nombre', ''),
+                telefono=data.get('telefono', ''),
+                direccion=data.get('direccion', '')
+            )
+            return Response({"message": "Usuario creado exitosamente"}, status=status.HTTP_201_CREATED)
+        except Exception as e:
+            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 from rest_framework_simplejwt.views import TokenObtainPairView
 from .serializers import EmailTokenObtainPairSerializer
@@ -58,3 +61,31 @@ def get_user_info(request):
         'email': request.user.email,
         # Puedes incluir otros campos si quieres
     })
+
+
+
+# En apps/users/views.py - AGREGAR:
+
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
+from rest_framework.response import Response
+from rest_framework import status
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    try:
+        data = request.data
+        user = Usuario.objects.create_user(
+            email=data.get('email'),
+            password=data.get('password'),
+            nombre=data.get('nombre', ''),
+            telefono=data.get('telefono', ''),
+            direccion=data.get('direccion', '')
+        )
+        return Response({
+            "message": "Usuario creado exitosamente",
+            "user_id": user.id
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)

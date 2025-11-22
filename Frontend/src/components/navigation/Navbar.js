@@ -6,28 +6,20 @@ import { useAuth } from '../AuthContext';
 import { NavLink } from 'react-router-dom';
 import { useNavigate } from "react-router-dom";
 
-
-
-
 function Navbar(props) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [scrollY, setScrollY] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
-// luego quitar
-  const [showCart, setShowCart] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [showMobileSearch, setShowMobileSearch] = useState(false);
 
   const { isLoggedIn, userName, userEmail, logout } = useAuth();
   const navigate = useNavigate();
-// hasta aqui
+
   const handleLogout = () => {
     logout();
-    navigate('/Home');
+    navigate('/');
   };
-//y aqyu
+
   useEffect(() => {
     setIsLoaded(true);
     
@@ -38,22 +30,6 @@ function Navbar(props) {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
-
-
-  // Items del menú principal (filtrados según el estado de login)
-  const getMenuItems = () => {
-    const baseItems = [
-      { to: "/Home", label: "Inicio" },
-    ];
-
-    // Solo mostrar "Crear cuenta" si NO está logueado
-    if (!isLoggedIn) {
-      baseItems.push({ to: "/registrarse", label: "Crear cuenta" });
-    }
-
-    return baseItems;
-  };
-
 
   return (
     <nav>
@@ -116,16 +92,44 @@ function Navbar(props) {
           
           {/* Botones de autenticación Desktop */}
           <div className="flex gap-3">
-            <Link to="/InciarSesion">
-              <button className="bg-white/80 text-[#3d3d3d] px-8 py-3.5 rounded-xl text-base font-bold hover:bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:scale-105 active:scale-95 backdrop-blur-md">
-                Iniciar Sesión
-              </button>
-            </Link>
-            <Link to="/Registrarse">
-              <button className="bg-[#4a4035] text-white px-8 py-3.5 rounded-xl text-base font-bold hover:bg-[#352e25] transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:scale-105 active:scale-95">
-                Registrarse
-              </button>
-            </Link>
+            {!isLoggedIn ? (
+              // Mostrar cuando NO está logueado
+              <>
+                <Link to="/InciarSesion">
+                  <button className="bg-white/80 text-[#3d3d3d] px-8 py-3.5 rounded-xl text-base font-bold hover:bg-white transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:scale-105 active:scale-95 backdrop-blur-md">
+                    Iniciar Sesión
+                  </button>
+                </Link>
+                <Link to="/Registrarse">
+                  <button className="bg-[#4a4035] text-white px-8 py-3.5 rounded-xl text-base font-bold hover:bg-[#352e25] transition-all duration-500 hover:-translate-y-1 hover:shadow-2xl hover:scale-105 active:scale-95">
+                    Registrarse
+                  </button>
+                </Link>
+              </>
+            ) : (
+              // Mostrar cuando SÍ está logueado
+              <div className="flex gap-3 items-center">
+                {/* Botón de Administración - Solo para admin */}
+                {(localStorage.getItem('userEmail') === 'x@gmail.com' || userEmail === 'x@gmail.com') && (
+                  <button
+                    onClick={() => navigate('/panelAdmin')}
+                    className="bg-purple-500 text-white px-4 py-2 rounded hover:bg-purple-600 transition-colors duration-300 flex items-center gap-1"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    Admin
+                  </button>
+                )}
+                <button
+                  onClick={handleLogout}
+                  className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition-colors duration-300"
+                >
+                  Cerrar sesión
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -202,180 +206,59 @@ function Navbar(props) {
                 </Link>
               </li>
             </ul>
-            
 
-            {/* Botón de login/logout */}
-            {isLoggedIn ? (
-              <button
-                onClick={handleLogout}
-                className="
-                  bg-red-500 text-white px-3 py-1 rounded 
-                  hover:bg-red-600 hover:scale-105 transition-all duration-300 
-                  text-[16px] font-bold ml-2 shadow-md hover:shadow-lg
-                "
-              >
-                Cerrar sesión
-              </button>
-            ) : (
-              <NavLink
-                to="/login"
-                className="
-                    group relative overflow-hidden
-                    bg-white/90 backdrop-blur-sm
-                    text-emerald-700 font-semibold text-[16px]
-                    px-4 py-2 ml-2 rounded-lg
-                    border border-emerald-200/50
-                    hover:bg-emerald-600 hover:text-white
-                    hover:border-emerald-600
-                    hover:shadow-lg hover:shadow-emerald-200/40
-                    hover:-translate-y-0.5
-                    focus:outline-none focus:ring-2 focus:ring-emerald-300/50 focus:ring-offset-1
-                    active:translate-y-0 active:scale-[0.98]
-                    transition-all duration-300 ease-out
-                    before:absolute before:inset-0 
-                    before:bg-gradient-to-r before:from-transparent before:via-white/20 before:to-transparent
-                    before:translate-x-[-100%] before:transition-transform before:duration-500
-                    hover:before:translate-x-[100%]
-                  "
-              >
-                <span className="relative z-10 flex items-center gap-1.5">
-                  <svg
-                    className="w-4 h-4 transition-all duration-300 group-hover:rotate-12 group-hover:scale-110"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                    />
-                  </svg>
-                  Ingresa
-                </span>
-              </NavLink>
-            )}
-            {/* Botón de Administración - Solo para admin logueado */}
-            {isLoggedIn && (localStorage.getItem('userEmail') === 'x@gmail.com' || userEmail === 'x@gmail.com') && (
-              <button
-                onClick={() => navigate('/admin-panel')}
-                className="
-                            bg-purple-500 text-white px-3 py-1 rounded 
-                            hover:bg-purple-600 hover:scale-105 transition-all duration-300 
-                            text-[16px] font-bold ml-2 shadow-md hover:shadow-lg
-                            flex items-center gap-1
-                          "
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-                Admin
-              </button>
-            )}
-            {/* Botón de login/logout destacado */}
-                <div className="mt-4 pt-4 border-t border-green-300/20">
-                  {isLoggedIn ? (
+            {/* Sección de autenticación móvil */}
+            <div className="p-4 border-t border-gray-200">
+              {isLoggedIn ? (
+                // Cuando está logueado - mostrar cerrar sesión y admin
+                <div className="space-y-3">
+                  <div className="text-center mb-4">
+                    <p className="text-gray-600 font-medium">Hola, {userName}</p>
+                    <p className="text-gray-400 text-sm">{userEmail}</p>
+                  </div>
+                  
+                  {/* Botón de administración móvil */}
+                  {(localStorage.getItem('userEmail') === 'x@gmail.com' || userEmail === 'x@gmail.com') && (
                     <button
                       onClick={() => {
-                        handleLogout();
-                        setIsOpen(false);
+                        navigate('/panelAdmin');
+                        setMenuOpen(false);
                       }}
-                      className="
-                        block w-full text-center
-                        bg-red-500 text-white font-bold
-                        px-6 py-4 rounded-lg text-base sm:text-lg
-                        hover:bg-red-600 hover:shadow-lg
-                        transition-all duration-300
-                        active:scale-95
-                      "
+                      className="block w-full text-center bg-purple-500 text-white font-bold px-6 py-3 rounded-lg text-base hover:bg-purple-600 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2"
                     >
-                      Cerrar sesión
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                      </svg>
+                      Administración
                     </button>
-                  ) : (
-                    <NavLink
-                      to="/login"
-                      onClick={() => setIsOpen(false)}
-                      className="
-                                  group relative block w-full text-center overflow-hidden
-                                  bg-gradient-to-r from-emerald-50 to-green-50
-                                  border border-emerald-200/60
-                                  text-emerald-700 font-semibold
-                                  px-6 py-4 rounded-xl text-base sm:text-lg
-                                  backdrop-blur-sm
-                                  hover:from-emerald-100 hover:to-green-100
-                                  hover:border-emerald-300/80
-                                  hover:shadow-lg hover:shadow-emerald-100/50
-                                  hover:text-emerald-800
-                                  hover:-translate-y-0.5
-                                  focus:outline-none focus:ring-2 focus:ring-emerald-300/50 focus:ring-offset-2
-                                  active:translate-y-0 active:scale-[0.98]
-                                  transition-all duration-300 ease-in-out
-                                  before:absolute before:inset-0 
-                                  before:bg-gradient-to-r before:from-emerald-200/0 before:via-emerald-200/20 before:to-emerald-200/0
-                                  before:translate-x-[-100%] before:transition-transform before:duration-700
-                                  hover:before:translate-x-[100%]
-                                "
-                    >
-                      <span className="relative z-10 flex items-center justify-center gap-2">
-                        <svg
-                          className="w-5 h-5 transition-transform duration-300 group-hover:scale-110"
-                          fill="none"
-                          stroke="currentColor"
-                          viewBox="0 0 24 24"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth={2}
-                            d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
-                          />
-                        </svg>
-                        Ingresar
-                      </span>
-                    </NavLink>
                   )}
-                </div>
-                {/* Botón de administración móvil */}
-                {isLoggedIn && (localStorage.getItem('userEmail') === 'x@gmail.com' || userEmail === 'x@gmail.com') && (
+                  
                   <button
                     onClick={() => {
-                      navigate('/admin-panel');
-                      setIsOpen(false);
+                      handleLogout();
+                      setMenuOpen(false);
                     }}
-                    className="
-                                block w-full text-center mt-2
-                                bg-purple-500 text-white font-bold
-                                px-6 py-4 rounded-lg text-base sm:text-lg
-                                hover:bg-purple-600 hover:shadow-lg
-                                transition-all duration-300
-                                active:scale-95
-                                flex items-center justify-center gap-2
-                              "
+                    className="block w-full text-center bg-red-500 text-white font-bold px-6 py-3 rounded-lg text-base hover:bg-red-600 transition-all duration-300 active:scale-95"
                   >
-                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                    Administración
+                    Cerrar sesión
                   </button>
-                )}
-
-
-
-            {/* Botones de autenticación Mobile */}
-            <div className="flex flex-col gap-3 p-4 border-t border-gray-200">
-              <Link to="/InciarSesion" onClick={() => setMenuOpen(false)}>
-                <button className="w-full bg-white/80 text-[#3d3d3d] px-6 py-3 rounded-xl text-base font-bold hover:bg-white transition-all duration-300 hover:shadow-lg">
-                  Iniciar Sesión
-                </button>
-              </Link>
-              <Link to="/Registrarse" onClick={() => setMenuOpen(false)}>
-                <button className="w-full bg-[#4a4035] text-white px-6 py-3 rounded-xl text-base font-bold hover:bg-[#352e25] transition-all duration-300 hover:shadow-lg">
-                  Registrarse
-                </button>
-              </Link>
+                </div>
+              ) : (
+                // Cuando NO está logueado - mostrar iniciar sesión y registrarse
+                <div className="flex flex-col gap-3">
+                  <Link to="/InciarSesion" onClick={() => setMenuOpen(false)}>
+                    <button className="w-full bg-white/80 text-[#3d3d3d] px-6 py-3 rounded-xl text-base font-bold hover:bg-white transition-all duration-300 hover:shadow-lg">
+                      Iniciar Sesión
+                    </button>
+                  </Link>
+                  <Link to="/Registrarse" onClick={() => setMenuOpen(false)}>
+                    <button className="w-full bg-[#4a4035] text-white px-6 py-3 rounded-xl text-base font-bold hover:bg-[#352e25] transition-all duration-300 hover:shadow-lg">
+                      Registrarse
+                    </button>
+                  </Link>
+                </div>
+              )}
             </div>
           </div>
         </div>

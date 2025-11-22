@@ -6,14 +6,14 @@ from django.conf.urls.static import static
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 
+from apps.users.views import EmailTokenObtainPairView
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('api/', include('apps.users.urls')),
     path('api/users/', include('apps.users.urls')),
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('api/token/', EmailTokenObtainPairView.as_view(), name='token_obtain_pair'), 
     path('', TemplateView.as_view(template_name='index.html')),
-    
-] + static(settings.MEDIA_URL, document_root = settings.MEDIA_ROOT)
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 urlpatterns += [re_path(r'^.*', TemplateView.as_view(template_name='index.html'))]
 

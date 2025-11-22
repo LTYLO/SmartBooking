@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import logo2 from 'assets/img/background.jpg';
 
 function getCookie(name) {
   let cookieValue = null;
@@ -25,7 +26,6 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
     password: '',
     telefono: '',
     direccion: '',
-    edad: '',
   });
 
   const [mensaje, setMensaje] = useState('');
@@ -38,9 +38,7 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
       setLoading(true);
       fetch(`http://localhost:8000/api/users/${usuarioId}/`)
         .then(res => {
-          if (!res.ok) {
-            throw new Error(`HTTP ${res.status}`);
-          }
+          if (!res.ok) throw new Error(`HTTP ${res.status}`);
           return res.json();
         })
         .then(data => {
@@ -57,17 +55,11 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
         .catch(err => {
           console.error('Error al obtener usuario:', err);
           setLoading(false);
-          
-          if (err.code === 'ECONNREFUSED' ||
-              err.code === 'ERR_NETWORK' ||
-              err.message.includes('Network Error') ||
-              err.message.includes('fetch') ||
-              !err.response) {
-            console.log('Error de conexión detectado, redirigiendo...');
+          if (err.code === 'ECONNREFUSED' || err.code === 'ERR_NETWORK' ||
+              err.message.includes('Network Error') || err.message.includes('fetch') || !err.response) {
             setServerError(true);
-            
             setTimeout(() => {
-               navigate('/Sing_Up');
+              navigate('/Sing_Up');
               navigate('/error/500_sing');
             }, 3000);
           }
@@ -85,87 +77,51 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
     setError(false);
     setLoading(true);
 
-    const csrfToken = getCookie('csrftoken');
-
-    const url = usuarioId
-      ? `http://localhost:8000/api/users/${usuarioId}/`
-      : 'http://localhost:8000/api/users/';
-    const method = usuarioId ? 'PUT' : 'POST';
-
     try {
-      const response = await fetch(url, {
-        method,
-        headers: {
-          'Content-Type': 'application/json',
-          'X-CSRFToken': csrfToken,
-        },
-        credentials: 'include',
+      const response = await fetch('http://localhost:8000/api/users/register/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
 
       if (response.ok) {
-        setMensaje(usuarioId ? 'Usuario actualizado con éxito.' : 'Usuario creado correctamente.');
+        setMensaje('Usuario creado correctamente. Ahora puedes iniciar sesión.');
         setError(false);
-        if (!usuarioId) {
-          setFormData({
-            nombre: '',
-            email: '',
-            password: '',
-            telefono: '',
-            direccion: '',
-            edad: '',
-          });
-        }
-        if (onSuccess) onSuccess();
+        setFormData({ nombre: '', email: '', password: '', telefono: '', direccion: '' });
+        setTimeout(() => navigate('/InciarSesion'), 2000);
       } else {
-        setMensaje(data.detail || 'Error al enviar el formulario.');
+        setMensaje(data.email?.[0] || data.password?.[0] || 'Error al crear el usuario');
         setError(true);
       }
-      setLoading(false);
     } catch (err) {
-      console.error('Error al enviar formulario:', err);
+      setMensaje('Error de conexión con el servidor.');
+      setError(true);
+    } finally {
       setLoading(false);
-      
-      if (err.code === 'ECONNREFUSED' ||
-          err.code === 'ERR_NETWORK' ||
-          err.message.includes('Network Error') ||
-          err.message.includes('fetch') ||
-          !err.response) {
-        console.log('Error de conexión detectado, redirigiendo...');
-        setServerError(true);
-        
-        setTimeout(() => {
-          navigate('/error/500_sing');
-        }, 3000);
-      } else {
-        setMensaje('Error de conexión con el servidor.');
-        setError(true);
-      }
     }
   };
 
   if (serverError) {
     return (
-      <div className="min-h-screen bg-gray-900 flex items-center justify-center px-4 sm:px-6 lg:px-8">
-        <div className="bg-gray-800 border border-gray-700 shadow-2xl p-8 rounded-2xl w-full max-w-md text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-700 border-t-purple-500 mx-auto mb-6"></div>
-          <h2 className="text-2xl font-bold text-gray-100 mb-4">Error de Conexión</h2>
-          <p className="text-gray-400 text-lg">Redirigiendo al manejo de errores...</p>
+      <div className="min-h-screen relative flex items-center justify-center px-4 sm:px-6 lg:px-8">
+        <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: `url(${logo2})`, filter: 'blur(3px)', transform: 'scale(1.02)' }} />
+        <div className="fixed inset-0 -z-10 bg-white/30" />
+        <div className="bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl p-8 rounded-2xl w-full max-w-md text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#e5e5e5] border-t-[#c9b39c] mx-auto mb-6"></div>
+          <h2 className="text-2xl font-bold text-[#3d3d3d] mb-4">Error de Conexión</h2>
+          <p className="text-[#6d6d6d] text-lg">Redirigiendo al manejo de errores...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12 relative overflow-hidden">
-      {/* Efecto de fondo con gradiente animado */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-600 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-0 right-1/4 w-96 h-96 bg-pink-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
-        <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-blue-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000"></div>
-      </div>
+    <div className="min-h-screen relative flex flex-col items-center justify-center px-4 sm:px-6 lg:px-8 py-12 overflow-hidden">
+      {/* Fondo con imagen y blur sutil */}
+      <div className="fixed inset-0 -z-10 bg-cover bg-center" style={{ backgroundImage: `url(${logo2})`, filter: 'blur(3px)', transform: 'scale(1.02)' }} />
+      <div className="fixed inset-0 -z-10 bg-white/30" />
 
       {/* Contenido principal */}
       <div className="relative z-10 w-full max-w-2xl">
@@ -176,16 +132,16 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
-          <h1 className="text-4xl font-bold bg-gradient-to-r from-pink-400 via-purple-400 to-blue-400 bg-clip-text text-transparent mb-2">
+          <h1 className="text-4xl font-black bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 bg-clip-text text-transparent mb-2">
             SMARTBOOKING
           </h1>
-          <p className="text-gray-400 text-sm">Sistema de reserva de espacios compartidos</p>
+          <p className="text-[#4a4035] text-sm font-semibold">Sistema de reserva de espacios compartidos</p>
         </div>
 
         {/* Formulario */}
-        <div className="bg-gray-800 bg-opacity-50 backdrop-blur-xl border border-gray-700 shadow-2xl rounded-3xl overflow-hidden">
+        <div className="bg-white/90 backdrop-blur-md border border-white/50 shadow-2xl rounded-3xl overflow-hidden">
           {/* Header del formulario */}
-          <div className="bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 px-6 py-6">
+          <div className="bg-[#c9b39c] px-6 py-6">
             <h2 className="text-2xl font-bold text-center text-white">
               {usuarioId ? 'Editar Cuenta' : 'Crear Cuenta'}
             </h2>
@@ -196,9 +152,7 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
             <div className="space-y-5">
               {/* Nombre completo */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Nombre completo
-                </label>
+                <label className="block text-sm font-bold text-[#5d5d5d]">Nombre completo</label>
                 <input
                   type="text"
                   name="nombre"
@@ -207,15 +161,13 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                 />
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Correo electrónico
-                </label>
+                <label className="block text-sm font-bold text-[#5d5d5d]">Correo electrónico</label>
                 <input
                   type="email"
                   name="email"
@@ -224,15 +176,13 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                   onChange={handleChange}
                   required
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                 />
               </div>
 
               {/* Contraseña */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Contraseña
-                </label>
+                <label className="block text-sm font-bold text-[#5d5d5d]">Contraseña</label>
                 <input
                   type="password"
                   name="password"
@@ -241,15 +191,13 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                   onChange={handleChange}
                   disabled={loading}
                   {...(!usuarioId && { required: true })}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                 />
               </div>
 
               {/* Dirección */}
               <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-300">
-                  Dirección
-                </label>
+                <label className="block text-sm font-bold text-[#5d5d5d]">Dirección</label>
                 <input
                   type="text"
                   name="direccion"
@@ -257,16 +205,14 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                   value={formData.direccion}
                   onChange={handleChange}
                   disabled={loading}
-                  className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                  className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                 />
               </div>
 
-              {/* Teléfono y edad en la misma fila */}
+              {/* Teléfono y edad */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Teléfono
-                  </label>
+                  <label className="block text-sm font-bold text-[#5d5d5d]">Teléfono</label>
                   <input
                     type="text"
                     name="telefono"
@@ -274,14 +220,11 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                     value={formData.telefono}
                     onChange={handleChange}
                     disabled={loading}
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                   />
                 </div>
-                
                 <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-300">
-                    Edad
-                  </label>
+                  <label className="block text-sm font-bold text-[#5d5d5d]">Edad</label>
                   <input
                     type="number"
                     name="edad"
@@ -290,7 +233,7 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                     onChange={handleChange}
                     min="0"
                     disabled={loading}
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 rounded-xl text-gray-100 placeholder-gray-500 focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-500 focus:ring-opacity-50 transition-all duration-300 disabled:bg-gray-800 disabled:cursor-not-allowed"
+                    className="w-full px-4 py-3 bg-white/80 border-2 border-[#e5e5e5] rounded-xl text-[#3d3d3d] placeholder-[#9d9d9d] focus:outline-none focus:border-[#c9b39c] focus:ring-4 focus:ring-[#c9b39c]/20 transition-all duration-300 disabled:bg-[#f5f0ea] disabled:cursor-not-allowed"
                   />
                 </div>
               </div>
@@ -300,7 +243,7 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
                 type="button"
                 onClick={handleSubmit}
                 disabled={loading}
-                className="w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500 hover:from-pink-600 hover:via-purple-600 hover:to-blue-600 disabled:from-gray-600 disabled:to-gray-700 text-white font-semibold py-3 rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-lg hover:shadow-purple-500/50 disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
+                className="w-full bg-[#c9b39c] hover:bg-[#b8a28b] disabled:bg-[#d4c4b0] text-white font-bold py-3 rounded-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 active:scale-95 shadow-lg hover:shadow-2xl disabled:cursor-not-allowed disabled:transform-none flex items-center justify-center"
               >
                 {loading ? (
                   <>
@@ -319,19 +262,17 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
 
               {/* Mensaje de respuesta */}
               {mensaje && (
-                <div className={`p-4 rounded-xl border transition-all duration-300 ${
-                  error 
-                    ? 'bg-red-900/30 border-red-700 text-red-300' 
-                    : 'bg-green-900/30 border-green-700 text-green-300'
+                <div className={`p-4 rounded-xl border-2 transition-all duration-300 ${
+                  error ? 'bg-red-50 border-red-200 text-red-600' : 'bg-green-50 border-green-200 text-green-600'
                 }`}>
                   <div className="flex items-center">
                     <div className="flex-shrink-0">
                       {error ? (
-                        <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
                         </svg>
                       ) : (
-                        <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                        <svg className="h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
                       )}
@@ -348,40 +289,14 @@ const UsuarioForm = ({ usuarioId, onSuccess }) => {
 
         {/* Footer */}
         <div className="text-center mt-6">
-          <p className="text-sm text-gray-400">
+          <p className="text-sm text-[#6d6d6d]">
             ¿Necesitas ayuda?{' '}
-            <a href="#" className="text-purple-400 hover:text-purple-300 font-medium transition-colors duration-300">
+            <a href="#" className="text-[#c9b39c] hover:text-[#b8a28b] font-bold transition-colors duration-300">
               Contáctanos
             </a>
           </p>
         </div>
       </div>
-
-      <style jsx>{`
-        @keyframes blob {
-          0%, 100% {
-            transform: translate(0, 0) scale(1);
-          }
-          33% {
-            transform: translate(30px, -50px) scale(1.1);
-          }
-          66% {
-            transform: translate(-20px, 20px) scale(0.9);
-          }
-        }
-
-        .animate-blob {
-          animation: blob 7s infinite;
-        }
-
-        .animation-delay-2000 {
-          animation-delay: 2s;
-        }
-
-        .animation-delay-4000 {
-          animation-delay: 4s;
-        }
-      `}</style>
     </div>
   );
 };

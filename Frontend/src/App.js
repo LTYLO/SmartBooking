@@ -6,6 +6,7 @@ import Espacios from 'containers/pages/Espacios';
 import Reservas from 'containers/pages/Reservas';
 import Resgistrarse from 'containers/pages/Sing_Up'
 import IniciarSesion from 'containers/pages/Log_in'
+import PanelAdmin from 'containers/pages/panelAdmin'
 import store from './store';
 import { Provider } from 'react-redux';
 import { AuthProvider } from 'components/AuthContext';
@@ -23,7 +24,7 @@ function App() {
           <Route path="/Reservas" element={<Reservas/>} />
           <Route path="/Registrarse" element={<Resgistrarse/>} />
           <Route path="/InciarSesion" element={<IniciarSesion/>} />
-
+          <Route path="/PanelAdmin" element={<PanelAdmin/>} />
           {/* Error Display - Debe ir al final */}
           <Route path="*" element={<Error404 />} />
         </Routes>
