@@ -9,3 +9,19 @@ npm install
 
 
 npm i --legacy-peer-deps
+
+
+
+# 1. Detén el servidor si está corriendo (Ctrl+C)
+
+# 2. Elimina la base de datos
+del db.sqlite3
+
+# 4. Crea las migraciones desde cero
+python manage.py makemigrations
+
+# 5. Aplica las migraciones
+python manage.py migrate
+
+# 6. Inicia el servidor
+python manage.py runserver
