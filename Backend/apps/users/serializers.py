@@ -1,28 +1,37 @@
+# apps/users/serializers.py
 from rest_framework import serializers
 from .models import Usuario
-
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
+
 class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
-    # Cambia el campo username_field para que sea email
     username_field = 'email'
+
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        token['email'] = user.email
+        token['nombre'] = user.nombre
+        return token
 
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
-        fields = ['id', 'nombre', 'email', 'password', 'telefono', 'direccion']
+        fields = ['id', 'nombre', 'apellido', 'email', 'password', 'telefono', 'direccion']
         extra_kwargs = {
             'password': {'write_only': True},
-            'is_active': {'default': True}
+            'apellido': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'telefono': {'required': False, 'allow_blank': True, 'allow_null': True},
+            'direccion': {'required': False, 'allow_blank': True, 'allow_null': True},
         }
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        validated_data['is_active'] = True 
-        usuario = Usuario(**validated_data)
-        usuario.set_password(password)  # encripta la contraseña
-        usuario.save()
+        usuario = Usuario.objects.create_user(
+            password=password,
+            **validated_data
+        )
         return usuario
 
     def update(self, instance, validated_data):
@@ -30,23 +39,6 @@ class UsuarioSerializer(serializers.ModelSerializer):
         for attr, value in validated_data.items():
             setattr(instance, attr, value)
         if password:
-            instance.set_password(password)  # encripta la contraseña si la envían
+            instance.set_password(password)
         instance.save()
         return instance
-
-
-from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
-from rest_framework_simplejwt.views import TokenObtainPairView
-
-class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
-    username_field = 'email'  
-
-    @classmethod
-    def get_token(cls, user):
-        token = super().get_token(user)
-        token['email'] = user.email
-        return token
-
-    def validate(self, attrs):
-        attrs['username'] = attrs.get('email')
-        return super().validate(attrs)

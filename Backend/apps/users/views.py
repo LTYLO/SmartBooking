@@ -1,91 +1,72 @@
-# Usuarios/views.py
-from rest_framework import viewsets
+# apps/users/views.py
+from rest_framework import viewsets, status
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.response import Response
+from rest_framework_simplejwt.views import TokenObtainPairView
 from .models import Usuario
-from .serializers import UsuarioSerializer
+from .serializers import UsuarioSerializer, EmailTokenObtainPairSerializer
 
-from django.contrib.auth.hashers import make_password
 
 class UsuarioViewSet(viewsets.ModelViewSet):
     queryset = Usuario.objects.all()
     serializer_class = UsuarioSerializer
 
-    
-
-# apps/users/views.py
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Usuario
-from django.contrib.auth.hashers import make_password
-
-from django.utils.decorators import method_decorator
-from django.views.decorators.csrf import csrf_exempt
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework import status
-from .models import Usuario
-from django.contrib.auth.hashers import make_password
-
-@method_decorator(csrf_exempt, name='dispatch')
-class RegisterUser(APIView):
-    def post(self, request):
-        data = request.data
-        try:
-            user = Usuario.objects.create_user(
-                email=data.get('email'),
-                password=data.get('password'),
-                nombre=data.get('nombre', ''),
-                telefono=data.get('telefono', ''),
-                direccion=data.get('direccion', '')
-            )
-            return Response({"message": "Usuario creado exitosamente"}, status=status.HTTP_201_CREATED)
-        except Exception as e:
-            return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-
-from rest_framework_simplejwt.views import TokenObtainPairView
-from .serializers import EmailTokenObtainPairSerializer
 
 class EmailTokenObtainPairView(TokenObtainPairView):
     serializer_class = EmailTokenObtainPairSerializer
 
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated
-from rest_framework.response import Response
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def get_user_info(request):
-    return Response({
-        'username': request.user.username,
-        'email': request.user.email,
-        # Puedes incluir otros campos si quieres
-    })
-
-
-
-# En apps/users/views.py - AGREGAR:
-
-from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny
-from rest_framework.response import Response
-from rest_framework import status
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):
+    """Endpoint para registrar nuevos usuarios"""
+    # Para debug - ver qué datos llegan
+    print("=== DATOS RECIBIDOS ===")
+    print(request.data)
+    print("======================")
+    
     try:
-        data = request.data
-        user = Usuario.objects.create_user(
-            email=data.get('email'),
-            password=data.get('password'),
-            nombre=data.get('nombre', ''),
-            telefono=data.get('telefono', ''),
-            direccion=data.get('direccion', '')
-        )
-        return Response({
-            "message": "Usuario creado exitosamente",
-            "user_id": user.id
-        }, status=status.HTTP_201_CREATED)
+        serializer = UsuarioSerializer(data=request.data)
+        
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "message": "Usuario creado exitosamente",
+                "user": {
+                    "id": user.id,
+                    "email": user.email,
+                    "nombre": user.nombre
+                }
+            }, status=status.HTTP_201_CREATED)
+        else:
+            # Mostrar errores específicos
+            print("=== ERRORES DE VALIDACIÓN ===")
+            print(serializer.errors)
+            print("=============================")
+            return Response({
+                "error": "Datos inválidos",
+                "details": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
     except Exception as e:
-        return Response({"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        print("=== ERROR EXCEPTION ===")
+        print(str(e))
+        print("======================")
+        return Response({
+            "error": "Error al crear usuario",
+            "details": str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_info(request):
+    """Obtiene información del usuario autenticado"""
+    return Response({
+        'id': request.user.id,
+        'nombre': request.user.nombre,
+        'email': request.user.email,
+        'telefono': request.user.telefono or '',
+        'direccion': request.user.direccion or ''
+    })
