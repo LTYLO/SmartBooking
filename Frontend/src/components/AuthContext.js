@@ -5,30 +5,36 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [userName, setUserName] = useState("Invitado");
-  
-  const [isLoading, setIsLoading] = useState(true); // NUEVO: Estado de carga
   const [userEmail, setUserEmail] = useState("");
+  const [token, setToken] = useState(null); // AGREGAR ESTE ESTADO
+  const [isLoading, setIsLoading] = useState(true);
+  
   // Función para verificar el estado de autenticación
   const checkAuthStatus = () => {
     console.log('AuthContext: Verificando estado de autenticación...');
     
-    const token = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('authToken');
     const storedUserName = localStorage.getItem('userName');
+    const storedUserEmail = localStorage.getItem('userEmail');
     
-    console.log('AuthContext: Token encontrado:', !!token);
+    console.log('AuthContext: Token encontrado:', !!storedToken);
     console.log('AuthContext: UserName almacenado:', storedUserName);
     
-    if (token) {
+    if (storedToken) {
       setIsLoggedIn(true);
       setUserName(storedUserName || "Usuario");
+      setUserEmail(storedUserEmail || "");
+      setToken(storedToken); // AGREGAR ESTA LÍNEA
       console.log('AuthContext: Usuario autenticado');
     } else {
       setIsLoggedIn(false);
       setUserName("Invitado");
+      setUserEmail("");
+      setToken(null); // AGREGAR ESTA LÍNEA
       console.log('AuthContext: Usuario no autenticado');
     }
     
-    setIsLoading(false); // NUEVO: Marcar como terminado
+    setIsLoading(false);
   };
 
   // Verificar al cargar el componente
@@ -38,27 +44,31 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   // Función para hacer login
-  const login = (token, name, email) => {
-    console.log('AuthContext: Haciendo login...', { token: !!token, name });
-  localStorage.setItem('authToken', token);
-  localStorage.setItem('userName', name);
-  localStorage.setItem('userEmail', email); // Agregar esta línea
-  setIsLoggedIn(true);
-  setUserName(name);
-  setUserEmail(email); // Agregar esta línea
+  const login = (newToken, name, email) => {
+    console.log('AuthContext: Haciendo login...', { token: !!newToken, name });
+    localStorage.setItem('authToken', newToken);
+    localStorage.setItem('userName', name);
+    localStorage.setItem('userEmail', email);
+    setIsLoggedIn(true);
+    setUserName(name);
+    setUserEmail(email);
+    setToken(newToken); // AGREGAR ESTA LÍNEA
     setIsLoading(false);
-};
+  };
 
   // Función para hacer logout
   const logout = () => {
     console.log('AuthContext: Haciendo logout...');
     localStorage.removeItem('authToken');
     localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
     // Limpiar tokens antiguos también
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     setIsLoggedIn(false);
     setUserName("Invitado");
+    setUserEmail("");
+    setToken(null); // AGREGAR ESTA LÍNEA
     setIsLoading(false);
   };
 
@@ -67,7 +77,8 @@ export const AuthProvider = ({ children }) => {
       isLoggedIn,
       userName,
       userEmail,
-      isLoading, // NUEVO: Exponer el estado de carga
+      token, // AGREGAR ESTA LÍNEA
+      isLoading,
       login,
       logout,
       checkAuthStatus
