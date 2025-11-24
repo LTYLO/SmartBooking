@@ -224,7 +224,7 @@ const LoginForm = () => {
                 </button>
 
                 <NavLink
-                  to="/Home"
+                  to="/"
                   className="block w-full bg-[#c9b39c] hover:bg-[#b8a28b] text-white font-bold py-3 rounded-xl transition-all duration-500 transform hover:scale-105 hover:-translate-y-1 active:scale-95 text-center shadow-lg hover:shadow-2xl"
                 >
                   Ir al inicio

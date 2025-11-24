@@ -36,26 +36,30 @@ function Navbar(props) {
       <div className="px-4 sm:px-6 md:px-8 py-4 md:py-6">
         {/* Desktop & Tablet Layout */}
         <div className="hidden lg:flex justify-between items-center gap-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center gap-3 animate-fadeIn">
-            <div className="w-12 h-12 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg hover:scale-110 hover:rotate-6 transition-all duration-500 cursor-pointer">
-              S
-            </div>
-            <span className="text-3xl font-black text-[#3d3d3d] tracking-tight">
-              <Typewriter
-                words={['SMARTBOOKING']}
-                loop={0}
-                cursor
-                cursorStyle="_"
-                typeSpeed={70}
-                deleteSpeed={350}
-                delaySpeed={1000}
-              />
-            </span>
-          </Link>
+          {/* Logo con contenedor de ancho fijo */}
+          <div className="w-64 flex-shrink-0"> {/* Ancho fijo para evitar movimiento */}
+            <Link to="/" className="flex items-center gap-3 animate-fadeIn">
+              <div className="w-12 h-12 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-2xl font-black shadow-lg hover:scale-110 hover:rotate-6 transition-all duration-500 cursor-pointer flex-shrink-0">
+                S
+              </div>
+              <div className="min-w-0 flex-1"> {/* Evita que el texto cause overflow */}
+                <span className="text-3xl font-black text-[#3d3d3d] tracking-tight whitespace-nowrap">
+                  <Typewriter
+                    words={['SMARTBOOKING']}
+                    loop={0}
+                    cursor
+                    cursorStyle="_"
+                    typeSpeed={70}
+                    deleteSpeed={350}
+                    delaySpeed={1000}
+                  />
+                </span>
+              </div>
+            </Link>
+          </div>
           
           {/* Menu Desktop */}
-          <ul className="flex gap-6 list-none bg-white/70 px-8 py-3.5 rounded-full backdrop-blur-md shadow-lg">
+          <ul className="flex gap-6 list-none bg-white/70 px-8 py-3.5 rounded-full backdrop-blur-md shadow-lg mx-auto">
             <li>
               <Link 
                 to="/" 
@@ -91,7 +95,7 @@ function Navbar(props) {
           </ul>
           
           {/* Botones de autenticación Desktop */}
-          <div className="flex gap-3">
+          <div className="flex gap-3 flex-shrink-0">
             {!isLoggedIn ? (
               // Mostrar cuando NO está logueado
               <>
@@ -136,28 +140,32 @@ function Navbar(props) {
         {/* Mobile Layout */}
         <div className="lg:hidden">
           <div className="flex justify-between items-center">
-            {/* Logo Mobile */}
-            <Link to="/" className="flex items-center gap-2">
-              <div className="w-10 h-10 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-xl font-black shadow-lg">
-                S
-              </div>
-              <span className="text-xl sm:text-2xl font-black text-[#3d3d3d] tracking-tight">
-                <Typewriter
-                  words={['SMARTBOOKING']}
-                  loop={0}
-                  cursor
-                  cursorStyle="_"
-                  typeSpeed={70}
-                  deleteSpeed={350}
-                  delaySpeed={1000}
-                />
-              </span>
-            </Link>
+            {/* Logo Mobile con ancho fijo */}
+            <div className="w-48 flex-shrink-0">
+              <Link to="/" className="flex items-center gap-2">
+                <div className="w-10 h-10 bg-[#3d3d3d] rounded-xl flex items-center justify-center text-white text-xl font-black shadow-lg flex-shrink-0">
+                  S
+                </div>
+                <div className="min-w-0 flex-1">
+                  <span className="text-xl sm:text-2xl font-black text-[#3d3d3d] tracking-tight whitespace-nowrap">
+                    <Typewriter
+                      words={['SMARTBOOKING']}
+                      loop={0}
+                      cursor
+                      cursorStyle="_"
+                      typeSpeed={70}
+                      deleteSpeed={350}
+                      delaySpeed={1000}
+                    />
+                  </span>
+                </div>
+              </Link>
+            </div>
 
             {/* Hamburger Menu Button */}
             <button 
               onClick={() => setMenuOpen(!menuOpen)}
-              className="w-10 h-10 flex flex-col justify-center items-center gap-1.5 bg-white/70 rounded-xl backdrop-blur-md shadow-lg hover:scale-105 transition-all duration-300"
+              className="w-10 h-10 flex flex-col justify-center items-center gap-1.5 bg-white/70 rounded-xl backdrop-blur-md shadow-lg hover:scale-105 transition-all duration-300 flex-shrink-0"
               aria-label="Toggle menu"
             >
               <span className={`w-6 h-0.5 bg-[#3d3d3d] transition-all duration-300 ${menuOpen ? 'rotate-45 translate-y-2' : ''}`}></span>
