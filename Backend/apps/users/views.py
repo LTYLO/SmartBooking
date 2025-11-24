@@ -70,3 +70,60 @@ def get_user_info(request):
         'telefono': request.user.telefono or '',
         'direccion': request.user.direccion or ''
     })
+
+
+# apps/users/views.py - Agregar esta función
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_profile(request):
+    """Endpoint para actualizar el perfil del usuario autenticado"""
+    try:
+        user = request.user
+        data = request.data.copy()
+        
+        # Si se envía password, validar que no esté vacío
+        password = data.get('password')
+        if password == '':
+            data.pop('password', None)
+        
+        # Validar que el email no esté duplicado (excluyendo al usuario actual)
+        email = data.get('email')
+        if email and email != user.email:
+            if Usuario.objects.filter(email=email).exclude(id=user.id).exists():
+                return Response({
+                    "error": "Este email ya está en uso por otro usuario"
+                }, status=status.HTTP_400_BAD_REQUEST)
+        
+        serializer = UsuarioSerializer(user, data=data, partial=True)
+        
+        if serializer.is_valid():
+            user = serializer.save()
+            return Response({
+                "message": "Perfil actualizado exitosamente",
+                "user": {
+                    "id": user.id,
+                    "nombre": user.nombre,
+                    "email": user.email,
+                    "telefono": user.telefono
+                }
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                "error": "Datos inválidos",
+                "details": serializer.errors
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except Exception as e:
+        return Response({
+            "error": "Error al actualizar el perfil",
+            "details": str(e)
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+
+# apps/users/views.py - Agregar esta función también
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_user_profile(request):
+    """Obtiene el perfil completo del usuario autenticado"""
+    serializer = UsuarioSerializer(request.user)
+    return Response(serializer.data)

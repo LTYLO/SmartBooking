@@ -14,13 +14,15 @@ class EmailTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['nombre'] = user.nombre
         return token
 
-
+# apps/users/serializers.py - Modificar el UsuarioSerializer
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
         model = Usuario
         fields = ['id', 'nombre', 'apellido', 'email', 'password', 'telefono', 'direccion']
         extra_kwargs = {
-            'password': {'write_only': True},
+            'password': {'write_only': True, 'required': False},
+            'email': {'required': False},
+            'nombre': {'required': False},
             'apellido': {'required': False, 'allow_blank': True, 'allow_null': True},
             'telefono': {'required': False, 'allow_blank': True, 'allow_null': True},
             'direccion': {'required': False, 'allow_blank': True, 'allow_null': True},
