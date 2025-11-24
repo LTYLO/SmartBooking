@@ -393,6 +393,8 @@ console.log('userEmail:', userEmail);
     }
     
     console.log('Enviando token:', token);
+    console.log('Datos del formulario:', formData);
+    
     const response = await fetch(`${API_BASE_URL}/reservas/reservas/`, {
       method: 'POST',
       headers: {
@@ -404,14 +406,31 @@ console.log('userEmail:', userEmail);
 
     if (!response.ok) {
       const error = await response.json();
-      const errorMsg = error.non_field_errors?.[0] || error.detail || error.error || 'Error al crear la reserva';
+      console.error('Error completo del servidor:', error);
+      
+      // Construir mensaje de error detallado
+      let errorMsg = 'Error al crear la reserva: ';
+      
+      if (error.non_field_errors) {
+        errorMsg += error.non_field_errors[0];
+      } else if (error.detail) {
+        errorMsg += error.detail;
+      } else if (typeof error === 'object') {
+        // Mostrar todos los errores de campos
+        const errorMessages = Object.entries(error)
+          .map(([field, messages]) => `${field}: ${Array.isArray(messages) ? messages.join(', ') : messages}`)
+          .join('; ');
+        errorMsg += errorMessages;
+      } else {
+        errorMsg += 'Error desconocido';
+      }
+      
       throw new Error(errorMsg);
     }
 
     await fetchReservas();
     return await response.json();
   };
-
   const cancelReservation = async (reservaId) => {
     if (!token) {
       alert('Debes iniciar sesión');
