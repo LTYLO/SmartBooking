@@ -1,5 +1,6 @@
 import { connect } from 'react-redux';
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 // Componente Calendario Personalizado
 const CustomDatePicker = ({ value, onChange, label }) => {
@@ -384,7 +385,7 @@ const CustomSelect = ({ value, onChange, label, options }) => {
   );
 };
 
-const SpaceCard = ({ title, type, capacity, index }) => {
+const SpaceCard = ({ title, type, capacity, index, onReserve }) => {
   const [isVisible, setIsVisible] = useState(false);
   const [isHovered, setIsHovered] = useState(false);
 
@@ -426,7 +427,9 @@ const SpaceCard = ({ title, type, capacity, index }) => {
       <div className="p-4 sm:p-5 md:p-6 text-center bg-gradient-to-br from-[#f5f0ea]/95 to-[#ebe3d8]/95 backdrop-blur-sm">
         <h3 className="text-base sm:text-lg md:text-xl font-bold text-[#3d3d3d] tracking-wide mb-2">{title}</h3>
         <p className="text-xs sm:text-sm text-[#6d6d6d] mb-3 sm:mb-4">{type.charAt(0).toUpperCase() + type.slice(1)}</p>
-        <button className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[#c9b39c] text-white rounded-lg font-bold hover:bg-[#b8a28b] transition-all duration-500 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95 text-sm sm:text-base">
+        <button 
+          onClick={onReserve}
+          className="w-full px-4 sm:px-6 py-2.5 sm:py-3 bg-[#c9b39c] text-white rounded-lg font-bold hover:bg-[#b8a28b] transition-all duration-500 hover:shadow-xl hover:-translate-y-1 hover:scale-105 active:scale-95 text-sm sm:text-base">
           Reservar Ahora
         </button>
       </div>
@@ -435,6 +438,7 @@ const SpaceCard = ({ title, type, capacity, index }) => {
 };
 
 function Body(props) {
+  const navigate = useNavigate();
   const [startDate, setStartDate] = useState(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -538,14 +542,16 @@ function Body(props) {
           
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center">
             <button 
-              onClick={handleSearch}
+              onClick={() => navigate('/Espacios')}
               className="w-full sm:w-auto bg-[#c9b39c] text-white px-8 sm:px-12 md:px-16 py-3 sm:py-3.5 md:py-4 rounded-xl font-black text-sm sm:text-base md:text-lg hover:bg-[#b8a28b] transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:scale-105 active:scale-95 relative overflow-hidden group"
             >
               <span className="relative z-10">Buscar Espacios Disponibles</span>
               <div className="absolute inset-0 bg-gradient-to-r from-[#b8a28b] to-[#a38968] transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 origin-left"></div>
             </button>
             
-            <button className="w-full sm:w-auto bg-white/80 text-[#3d3d3d] px-8 sm:px-12 md:px-16 py-3 sm:py-3.5 md:py-4 rounded-xl font-bold text-sm sm:text-base md:text-lg hover:bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:scale-105 active:scale-95 backdrop-blur-md">
+            <button 
+              onClick={() => navigate('/Reservas')}
+              className="w-full sm:w-auto bg-white/80 text-[#3d3d3d] px-8 sm:px-12 md:px-16 py-3 sm:py-3.5 md:py-4 rounded-xl font-bold text-sm sm:text-base md:text-lg hover:bg-white transition-all duration-500 hover:-translate-y-2 hover:shadow-2xl hover:scale-105 active:scale-95 backdrop-blur-md">
               Ver Mis Reservas
             </button>
           </div>
@@ -563,10 +569,10 @@ function Body(props) {
         </h2>
         
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 md:gap-8 lg:gap-10">
-          <SpaceCard title="Sala de Reuniones A" type="sala" capacity="15 personas" index={0} />
-          <SpaceCard title="Auditorio Principal" type="auditorio" capacity="200 personas" index={1} />
-          <SpaceCard title="Cancha de Fútbol" type="cancha" capacity="22 jugadores" index={2} />
-          <SpaceCard title="Área de Juegos" type="recreativa" capacity="30 personas" index={3} />
+          <SpaceCard title="Sala de Reuniones A" type="sala" capacity="15 personas" index={0} onReserve={() => navigate('/Espacios')} />
+          <SpaceCard title="Auditorio Principal" type="auditorio" capacity="200 personas" index={1} onReserve={() => navigate('/Espacios')} />
+          <SpaceCard title="Cancha de Fútbol" type="cancha" capacity="22 jugadores" index={2} onReserve={() => navigate('/Espacios')} />
+          <SpaceCard title="Área de Juegos" type="recreativa" capacity="30 personas" index={3} onReserve={() => navigate('/Espacios')} />
         </div>
       </div>
 
@@ -604,4 +610,4 @@ function Body(props) {
 
 const mapStateToProps = (state) => ({});
 
-export default connect(mapStateToProps, {})(Body)
+export default connect(mapStateToProps, {})(Body);
